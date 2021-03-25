@@ -1,0 +1,26 @@
+//! Source file: FACE/DM/DataModel/tCmdsOutIDLS.idl
+
+#ifndef _FACE_DM_DATAMODEL_TCMDSOUTIDLS
+#define _FACE_DM_DATAMODEL_TCMDSOUTIDLS
+
+#include <FACE/DM/DataModel/idlsA661CmdsElements.idl>
+
+module FACE
+{
+    module DM
+    {
+        module DataModel
+        {
+            module T_tCmdsOutIDLS
+            {
+                struct tCmdsOutIDLS
+                {
+                    idlsA661CmdsElements pcA661CmdsOutIDLS;
+                };
+            };
+            typedef T_tCmdsOutIDLS::tCmdsOutIDLS tCmdsOutIDLS;
+        };
+    };
+};
+
+#endif // _FACE_DM_DATAMODEL_TCMDSOUTIDLS

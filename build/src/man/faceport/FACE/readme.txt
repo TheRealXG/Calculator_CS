@@ -1,0 +1,1 @@
+All faceport/FACE content can be copied here from the server's faceport/FACE directory.

@@ -1,0 +1,1091 @@
+/* $******* SCADE Suite KCG 32-bit 6.6.1 beta (build i1) ********
+** Command: kcg661.exe -config config_kcg.txt
+** Generation date: 2021-03-18T11:28:11
+*************************************************************$ */
+
+/* xscade source: ../Calculator/Calc.xscade */
+package Calc
+  package Utils
+    const imported NUL : char;
+
+    function imported printValue(value : float32)
+      returns (displayValue : char^16);
+
+    node updateDisplay(
+        keyEvent : int32;
+        negativeSign : bool;
+        validKeyPress : bool;
+        numberLength : int32)
+      returns (valueString : char^16)
+    var
+      absoluteValueString : char^16 last = DEFAULT_STRING;
+      _L3 : char^16;
+      _L4 : bool;
+      _L5 : int32;
+      _L7 : int32;
+      _L8 : int32;
+      _L9 : char;
+      _L11 : int32;
+      _L12 : char^16;
+      _L13 : char;
+      _L14 : char^16;
+      _L15 : int32;
+    let
+      absoluteValueString= _L14;
+      _L3= last 'absoluteValueString;
+      _L4= validKeyPress;
+      _L5= #1 if _L4 then (_L11) else (_L7);
+      _L7= - 1;
+      _L8= keyEvent;
+      _L9= #1 key2Char(_L8);
+      _L11= numberLength #1 - 1;
+      _L12= (_L3 #1 with [_L5] = _L9);
+      activate IfBlock1 if negativeSign
+        then var
+          _L1 : char^16;
+          _L2 : char^15;
+          _L3 : char^1;
+          _L4 : char;
+          _L5 : char^16;
+        let
+          valueString= _L5;
+          _L1= absoluteValueString;
+          _L2= _L1 #1 [0 .. 14];
+          _L3= (_L4)#1^1;
+          _L4= '-';
+          _L5= _L3 #1 @ _L2;
+        tel
+        else var
+          _L1 : char^16;
+        let
+          valueString= _L1;
+          _L1= absoluteValueString;
+        tel
+      returns ..;
+      _L13= NUL;
+      _L14= (_L12 #2 with [_L15] = _L13);
+      _L15= numberLength;
+    tel
+
+  end;
+
+  const KEY_00 : int32 = 0;
+
+  const KEY_01 : int32 = 1;
+
+  const KEY_02 : int32 = 2;
+
+  const KEY_03 : int32 = 3;
+
+  const KEY_04 : int32 = 4;
+
+  const KEY_05 : int32 = 5;
+
+  const KEY_06 : int32 = 6;
+
+  const KEY_07 : int32 = 7;
+
+  const KEY_08 : int32 = 8;
+
+  const KEY_09 : int32 = 9;
+
+  const KEY_10_DECIMAL : int32 = 10;
+
+  const KEY_14_MINUS : int32 = 14;
+
+  const KEY_13_PLUS : int32 = 13;
+
+  const KEY_15_TIMES : int32 = 15;
+
+  const KEY_16_DIVIDE : int32 = 16;
+
+  const KEY_17_CLEAR_ENTRY : int32 = 17;
+
+  const KEY_12_EQUALS : int32 = 12;
+
+  const KEY_18_CLEAR_ALL : int32 = 18;
+
+  const KEY_19_NONE : int32 = 19;
+
+  const KEY_11_NEGATIVE : int32 = 11;
+
+  const DISPLAY_MAX : int32 = 7;
+
+  const
+    DEFAULT_STRING : char^16
+      = ['0', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' '];
+
+  node root(keyEvent : int32)
+    returns (outputDisplay : char^16 last = DEFAULT_STRING)
+  var
+    entryValue : float32 last = 0.0;
+    storedFunction : int32 last = KEY_19_NONE;
+    storedValue : float32 last = 0.0;
+  let
+
+    automaton SM1
+      initial state EnterValue1
+        unless
+          if keyEvent #5 = KEY_17_CLEAR_ENTRY #1 or
+          keyEvent #6 = KEY_18_CLEAR_ALL restart EnterValue1;
+          if #2 keyIsFunction(keyEvent)
+            do let
+              storedValue= last 'entryValue;
+              storedFunction= keyEvent;
+            tel restart StoreFunction;
+        var
+          _L1 : float32;
+          _L2 : char^16;
+          _L3 : int32;
+        let
+          _L1, _L2= #1 valueEntry(_L3);
+          _L3= keyEvent;
+          outputDisplay= _L2;
+          entryValue= _L1;
+        tel
+
+      state EnterValue2
+        unless
+          if keyEvent #1 = KEY_17_CLEAR_ENTRY restart EnterValue2;
+          if keyEvent #3 = KEY_12_EQUALS restart Compute;
+          if keyEvent #4 = KEY_18_CLEAR_ALL restart EnterValue1;
+        var
+          _L3 : int32;
+          _L1 : float32;
+          _L2 : char^16;
+        let
+          entryValue= _L1;
+          outputDisplay= _L2;
+          _L1, _L2= #2 valueEntry(_L3);
+          _L3= keyEvent;
+        tel
+
+      state Compute
+        unless
+          if keyEvent #1 <> KEY_19_NONE restart EnterValue1;
+        var
+          probe result : float32;
+          _L1 : float32;
+          _L2 : char^16;
+          _L3 : int32;
+          _L4 : float32;
+          _L5 : float32;
+          _L8 : float32;
+        let
+          _L1= #1 performFunction(_L4, _L5, _L3);
+          _L2= #1 Utils::printValue(_L8);
+          _L3= storedFunction;
+          _L4= storedValue;
+          _L5= entryValue;
+          result= _L1;
+          outputDisplay= _L2;
+          _L8= result;
+        tel
+
+      state StoreFunction
+        unless
+          if #1 keyIsEntryElement(keyEvent) restart EnterValue2;
+        let
+        tel
+    returns ..;
+  tel
+
+  function #pragma kcg expand #end keyIsDigit(keyEvent : int32)
+    returns (isDigit : bool)
+  var
+    _L2 : int32;
+    _L4 : int32;
+    _L5 : int32;
+    _L6 : bool;
+  let
+    _L2= keyEvent;
+    _L4= KEY_09;
+    isDigit= _L6;
+    _L5= KEY_00;
+    _L6= #1 keyInRange(_L2, _L5, _L4);
+  tel
+
+  function #pragma kcg expand #end keyInRange(
+      keyEvent : int32;
+      startKey : int32;
+      endKey : int32)
+    returns (inRange : bool)
+  var
+    _L1 : int32;
+    _L2 : int32;
+    _L3 : int32;
+    _L4 : bool;
+    _L5 : bool;
+    _L6 : bool;
+  let
+    _L1= keyEvent;
+    _L2= startKey;
+    _L3= endKey;
+    inRange= _L6;
+    _L4= _L1 #1 >= _L2;
+    _L5= _L1 #1 <= _L3;
+    _L6= _L4 #1 and _L5;
+  tel
+
+  function #pragma kcg expand #end keyIsFunction(keyEvent : int32)
+    returns (isDigit : bool)
+  var
+    _L2 : int32;
+    _L4 : int32;
+    _L5 : int32;
+    _L6 : bool;
+  let
+    _L2= keyEvent;
+    _L4= KEY_16_DIVIDE;
+    isDigit= _L6;
+    _L5= KEY_13_PLUS;
+    _L6= #2 keyInRange(_L2, _L5, _L4);
+  tel
+
+  node valueEntry(keyEvent : int32)
+    returns (value : float32 last = 0.0; valueString : char^16)
+  sig
+    validKeyPress;
+  var
+    negativeSign : bool last = false;
+    rightmostDigitValue : float32 last = 1.0;
+    numberLength : int32 last = 1;
+    integerRepresentation : int32 last = 0;
+    _L18 : float32;
+    _L21 : float32;
+    _L22 : float32;
+    _L23 : bool;
+    _L24 : float32;
+    _L25 : float32;
+    _L26 : float32;
+    _L28 : int32;
+    _L29 : char^16;
+    _L30 : bool;
+    _L31 : int32;
+    _L32 : bool;
+    _L33 : int32;
+    _L34 : float32;
+  let
+
+    automaton SM1
+      initial state NegativeSignToggle
+        unless
+          if keyEvent #1 = KEY_11_NEGATIVE
+            do let negativeSign= #1 not last 'negativeSign; tel restart NegativeSignToggle;
+        let
+        tel
+    returns ..;
+
+    automaton SM2
+      initial state IntegerEntry
+        unless
+          if keyEvent #2 = KEY_10_DECIMAL restart AddDecimalPoint;
+        let
+          activate IfBlock1 if last 'numberLength #1 >= DISPLAY_MAX
+            then let
+            tel
+            else if last 'integerRepresentation #12 = 0 #5 and
+            #3 keyIsDigit(keyEvent)
+            then var
+              _L1 : bool;
+              _L2 : int32;
+            let
+              _L1= keyEvent #1 <> KEY_00;
+              emit 'validKeyPress if _L1;
+              _L2= keyEvent;
+              integerRepresentation= _L2;
+            tel
+            else if #1 keyIsDigit(keyEvent)
+            then var
+              _L1 : int32;
+              _L2 : int32;
+              _L4 : int32;
+              _L5 : int32;
+              _L6 : int32;
+              _L3 : int32;
+            let
+              _L1= _L2 #1 + _L4;
+              _L2= _L3 #1 * _L5;
+              _L4= keyEvent;
+              _L5= 10;
+              numberLength= _L6;
+              _L6= last 'numberLength #2 + 1;
+              emit 'validKeyPress;
+              integerRepresentation= _L1;
+              _L3= last 'integerRepresentation;
+            tel
+            else let
+            tel
+          returns ..;
+        tel
+
+      state FractionalEntry
+        let
+          activate IfBlock1 if last 'numberLength #2 >= DISPLAY_MAX
+            then let
+            tel
+            else if #2 keyIsDigit(keyEvent)
+            then var
+              _L1 : int32;
+              _L2 : int32;
+              _L4 : int32;
+              _L5 : int32;
+              _L6 : int32;
+              _L8 : float32;
+              _L9 : float32;
+              _L11 : float32;
+              _L3 : int32;
+            let
+              _L1= _L2 #5 + _L4;
+              _L2= _L3 #2 * _L5;
+              _L4= keyEvent;
+              _L5= 10;
+              _L6= last 'numberLength #10 + 1;
+              _L8= _L11 #1 / _L9;
+              _L9= 10.0;
+              rightmostDigitValue= _L8;
+              _L11= last 'rightmostDigitValue;
+              numberLength= _L6;
+              emit 'validKeyPress;
+              integerRepresentation= _L1;
+              _L3= last 'integerRepresentation;
+            tel
+            else let
+            tel
+          returns ..;
+        tel
+
+      state AddDecimalPoint
+        unless
+          if true restart FractionalEntry;
+        var
+          _L4 : int32;
+        let
+          numberLength= _L4;
+          _L4= last 'numberLength #4 + 1;
+          emit 'validKeyPress;
+        tel
+    returns ..;
+    value= _L22;
+    valueString= _L29;
+    _L18= rightmostDigitValue;
+    _L21= _L34 #3 * _L18;
+    _L22= _L21 #4 * _L24;
+    _L23= negativeSign;
+    _L24= #2 if _L23 then (_L25) else (_L26);
+    _L25= - 1.0;
+    _L26= 1.0;
+    _L28= integerRepresentation;
+    _L29= #1 Utils::updateDisplay(_L33, _L30, _L32, _L31);
+    _L30= negativeSign;
+    _L31= numberLength;
+    _L32= 'validKeyPress;
+    _L33= keyEvent;
+    _L34= (_L28 #2 : float32);
+  tel
+
+  function key2Char(keyEvent : int32) returns (charOut : char)
+  let
+    activate IfBlock1 if keyEvent #54 = KEY_00
+      then let
+        charOut= '0';
+      tel
+      else if keyEvent #55 = KEY_01
+      then let
+        charOut= '1';
+      tel
+      else if keyEvent #56 = KEY_02
+      then let
+        charOut= '2';
+      tel
+      else if keyEvent #57 = KEY_03
+      then let
+        charOut= '3';
+      tel
+      else if keyEvent #58 = KEY_04
+      then let
+        charOut= '4';
+      tel
+      else if keyEvent #59 = KEY_05
+      then let
+        charOut= '5';
+      tel
+      else if keyEvent #60 = KEY_06
+      then let
+        charOut= '6';
+      tel
+      else if keyEvent #61 = KEY_07
+      then let
+        charOut= '7';
+      tel
+      else if keyEvent #62 = KEY_08
+      then let
+        charOut= '8';
+      tel
+      else if keyEvent #63 = KEY_09
+      then let
+        charOut= '9';
+      tel
+      else if keyEvent #64 = KEY_10_DECIMAL
+      then let
+        charOut= '.';
+      tel
+      else let
+        charOut= '0';
+      tel
+    returns ..;
+  tel
+
+  function #pragma kcg expand #end keyIsEntryElement(keyEvent : int32)
+    returns (isDigit : bool)
+  var
+    _L2 : int32;
+    _L4 : int32;
+    _L5 : int32;
+    _L6 : bool;
+  let
+    _L2= keyEvent;
+    _L4= KEY_11_NEGATIVE;
+    isDigit= _L6;
+    _L5= KEY_00;
+    _L6= #1 keyInRange(_L2, _L5, _L4);
+  tel
+
+  function performFunction(value1 : float32; value2 : float32; f : int32)
+    returns (output : float32)
+  let
+    activate IfBlock1 if f #1 = KEY_13_PLUS
+      then let
+        output= value1 #1 + value2;
+      tel
+      else if f #2 = KEY_14_MINUS
+      then let
+        output= value1 #1 - value2;
+      tel
+      else if f #3 = KEY_15_TIMES
+      then let
+        output= value1 #1 * value2;
+      tel
+      else if f #5 = KEY_16_DIVIDE #1 and value2 #1 <> 0.0
+      then let
+        output= value1 #1 / value2;
+      tel
+      else let
+        output= 0;
+      tel
+    returns ..;
+  tel
+
+end;
+
+
+/* xscade source: ../Calculator/Calc_A661_Root.xscade */
+node Calc_A661_Root(
+    PB_00 : msg_notify;
+    PB_01 : msg_notify;
+    PB_02 : msg_notify;
+    PB_03 : msg_notify;
+    PB_04 : msg_notify;
+    PB_05 : msg_notify;
+    PB_06 : msg_notify;
+    PB_07 : msg_notify;
+    PB_08 : msg_notify;
+    PB_09 : msg_notify;
+    PB_10_Decimal : msg_notify;
+    PB_11_Negative : msg_notify;
+    PB_12_Equals : msg_notify;
+    PB_13_Plus : msg_notify;
+    PB_14_Minus : msg_notify;
+    PB_15_Times : msg_notify;
+    PB_16_Divide : msg_notify;
+    PB_17_Clear_Entry : msg_notify;
+    PB_18_Clear_All : msg_notify)
+  returns (displayText : msg_string16)
+var
+  _L1 : char^16;
+  _L2 : int32;
+  _L3 : msg_notify;
+  _L4 : msg_notify;
+  _L5 : msg_notify;
+  _L6 : msg_notify;
+  _L7 : msg_notify;
+  _L8 : msg_notify;
+  _L9 : msg_notify;
+  _L10 : msg_notify;
+  _L11 : msg_notify;
+  _L12 : msg_notify;
+  _L13 : msg_notify;
+  _L14 : msg_notify;
+  _L15 : msg_notify;
+  _L16 : msg_notify;
+  _L17 : msg_notify;
+  _L18 : msg_notify;
+  _L19 : msg_notify;
+  _L20 : msg_notify;
+  _L21 : msg_notify;
+  _L22 : { Emit : bool, String_size : uint16, LabelString : char^16 };
+let
+  _L1= #1 root(_L2);
+  _L2=
+    #1 PushButtonAdaptor(_L3, _L4, _L5, _L6, _L7, _L8, _L9, _L10, _L11, _L12,
+      _L13, _L14, _L15, _L16, _L17, _L18, _L19, _L20, _L21);
+  _L3= PB_00;
+  _L4= PB_01;
+  _L5= PB_02;
+  _L6= PB_03;
+  _L7= PB_04;
+  _L8= PB_05;
+  _L9= PB_06;
+  _L10= PB_07;
+  _L11= PB_08;
+  _L12= PB_09;
+  _L13= PB_10_Decimal;
+  _L14= PB_11_Negative;
+  _L15= PB_12_Equals;
+  _L16= PB_13_Plus;
+  _L17= PB_14_Minus;
+  _L18= PB_15_Times;
+  _L19= PB_16_Divide;
+  _L20= PB_17_Clear_Entry;
+  _L21= PB_18_Clear_All;
+  displayText= _L22;
+  _L22= (#1 a661_util::SendStringOnValChanged <<16>>)(_L1);
+tel
+
+
+/* xscade source: ../Calculator/Calculator.xscade */
+type
+  msg_string16 = { Emit : bool, String_size : uint16, LabelString : char^16 };
+
+type msg_notify = { Notify : bool, EventOrigin : uint16 };
+
+open Calc;
+
+/* xscade source: ../Calculator/PushButtonAdaptor.xscade */
+function PushButtonAdaptor(
+    PB_00 : msg_notify;
+    PB_01 : msg_notify;
+    PB_02 : msg_notify;
+    PB_03 : msg_notify;
+    PB_04 : msg_notify;
+    PB_05 : msg_notify;
+    PB_06 : msg_notify;
+    PB_07 : msg_notify;
+    PB_08 : msg_notify;
+    PB_09 : msg_notify;
+    PB_10_Decimal : msg_notify;
+    PB_11_Negative : msg_notify;
+    PB_12_Equals : msg_notify;
+    PB_13_Plus : msg_notify;
+    PB_14_Minus : msg_notify;
+    PB_15_Times : msg_notify;
+    PB_16_Divide : msg_notify;
+    PB_17_Clear_Entry : msg_notify;
+    PB_18_Clear_All : msg_notify)
+  returns (keyEvent : int32)
+let
+  activate IfBlock1 if PB_00#1.Notify
+    then let
+      keyEvent= KEY_00;
+    tel
+    else if PB_01#2.Notify
+    then let
+      keyEvent= KEY_01;
+    tel
+    else if PB_02#3.Notify
+    then let
+      keyEvent= KEY_02;
+    tel
+    else if PB_03#4.Notify
+    then let
+      keyEvent= KEY_03;
+    tel
+    else if PB_04#5.Notify
+    then let
+      keyEvent= KEY_04;
+    tel
+    else if PB_05#6.Notify
+    then let
+      keyEvent= KEY_05;
+    tel
+    else if PB_06#7.Notify
+    then let
+      keyEvent= KEY_06;
+    tel
+    else if PB_07#8.Notify
+    then let
+      keyEvent= KEY_07;
+    tel
+    else if PB_08#9.Notify
+    then let
+      keyEvent= KEY_08;
+    tel
+    else if PB_09#10.Notify
+    then let
+      keyEvent= KEY_09;
+    tel
+    else if PB_10_Decimal#11.Notify
+    then let
+      keyEvent= KEY_10_DECIMAL;
+    tel
+    else if PB_11_Negative#12.Notify
+    then let
+      keyEvent= KEY_11_NEGATIVE;
+    tel
+    else if PB_12_Equals#13.Notify
+    then let
+      keyEvent= KEY_12_EQUALS;
+    tel
+    else if PB_13_Plus#14.Notify
+    then let
+      keyEvent= KEY_13_PLUS;
+    tel
+    else if PB_14_Minus#15.Notify
+    then let
+      keyEvent= KEY_14_MINUS;
+    tel
+    else if PB_15_Times#16.Notify
+    then let
+      keyEvent= KEY_15_TIMES;
+    tel
+    else if PB_16_Divide#17.Notify
+    then let
+      keyEvent= KEY_16_DIVIDE;
+    tel
+    else if PB_17_Clear_Entry#18.Notify
+    then let
+      keyEvent= KEY_17_CLEAR_ENTRY;
+    tel
+    else if PB_18_Clear_All#19.Notify
+    then let
+      keyEvent= KEY_18_CLEAR_ALL;
+    tel
+    else let
+      keyEvent= KEY_19_NONE;
+    tel
+  returns ..;
+tel
+
+
+/* xscade source: ../Calculator/libA661/A661_Char.xscade */
+package a661_char
+  const #pragma kcg C:name libA661_char_NULL #end NULL : char = '\x00';
+
+  const LF : char = '\x0A';
+
+  const BETA : char = '\x89';
+
+  const GAMMA : char = '\x8A';
+
+  const PHI : char = '\x8B';
+
+  const PSI : char = '\x8D';
+
+  const THETA : char = '\x8C';
+
+  const DOWN_ARROW : char = '\x87';
+
+  const UP_ARROW : char = '\x86';
+
+  const DEGREES : char = '\x81';
+
+  const CR : char = '\x0D';
+
+  const ESC : char = '\x1B';
+
+  const OVERFLY_TRIANGLE : char = '\x80';
+
+  const DIAMOND : char = '\x82';
+
+  const BOX : char = '\x83';
+
+  const LEFT_ARROW : char = '\x84';
+
+  const RIGHT_ARROW : char = '\x85';
+
+  const ALPHA : char = '\x88';
+
+  const RHO : char = '\x8E';
+
+  const DELTA : char = '\x92';
+
+  const TAU : char = '\x93';
+
+  const EPSILON : char = '\x8F';
+
+  const PI : char = '\x90';
+
+  const OMEGA : char = '\x91';
+
+end;
+
+
+/* xscade source: ../Calculator/libA661/A661_Escape.xscade */
+package a661_escape
+  const K_OUTLINE : char = '\x40';
+
+  const K_FORE_COLOR : char = '\x41';
+
+  const K_OCCUR_B : char = '\x50';
+
+  const K_BOLD_B : char = '\x4A';
+
+  const K_UNDERLINE_E : char = '\x49';
+
+  const K_ANIMATION_B : char = '\x46';
+
+  const K_VIDEO_INV_E : char = '\x45';
+
+  const K_BACK_COLOR : char = '\x42';
+
+  const K_FONT : char = '\x43';
+
+  const K_VIDEO_INV_B : char = '\x44';
+
+  const K_ANIMATION_E : char = '\x47';
+
+  const K_UNDERLINE_B : char = '\x48';
+
+  const K_BOLD_E : char = '\x4B';
+
+  const K_CROSSED_B : char = '\x4C';
+
+  const K_CROSSED_E : char = '\x4D';
+
+  const K_FRAMED_B : char = '\x4E';
+
+  const K_FRAMED_E : char = '\x4F';
+
+  const K_OCCUR_E : char = '\x51';
+
+  function imported OutlineValue(
+      Top : bool;
+      Bottom : bool;
+      Left : bool;
+      Right : bool)
+    returns (Tvalue0 : char);
+
+end;
+
+
+/* xscade source: ../Calculator/libA661/a661_util.xscade */
+package a661_util
+  node ValChanged(i : 'T) returns (o : bool)
+  let
+    o= (false) #1 -> (i <> pre (i));
+  tel
+
+  node ValRising(i : 'T) returns (o : bool) where 'T numeric
+  var
+    _L1 : 'T;
+    _L2 : bool;
+  let
+    _L1= i;
+    _L2= #1 ValChanged(_L1);
+    o= _L2;
+  tel
+
+  node SendOnValChanged(i : 'T) returns (o : { Emit : bool, Value : 'T })
+  var
+    send : bool;
+  let
+    send= (false) -> (i <> pre (i));
+    o= { Emit:send, Value:i };
+  tel
+
+  function SendAlways(i : 'T) returns (o : { Emit : bool, Value : 'T })
+  var
+    send : bool;
+  let
+    send= true;
+    o= { Emit:send, Value:i };
+  tel
+
+  node SendEveryNCycles(i : 'T; N : int32)
+    returns (o : { Emit : bool, Value : 'T })
+  var
+    send : bool;
+    count : int32;
+  let
+    count=
+      ((0 #8 : int32)) #3 ->
+        (#3 if #5 pre (count) #3 >= N
+          then ((0 #6 : int32))
+          else (#6 pre (count) #3 + (1 #7 : int32)));
+    send= count #3 = (0 #9 : int32);
+    o= #3{ Emit:send, Value:i };
+  tel
+
+  node SendStringOnValChanged<<N>>(i : char^N)
+    returns (o : { Emit : bool, String_size : uint16, LabelString : char^N })
+  var
+    send : bool;
+  let
+    send= (false) -> (i <> pre (i));
+    o= { Emit:send, String_size:N, LabelString:i };
+  tel
+
+  function SendStringAlways<<N>>(i : char^N)
+    returns (o : { Emit : bool, String_size : uint16, LabelString : char^N })
+  var
+    send : bool;
+  let
+    send= true;
+    o= { Emit:send, String_size:N, LabelString:i };
+  tel
+
+  node SendStringEveryNCycles<<M>>(i : char^M; N : int32)
+    returns (o : { Emit : bool, String_size : uint16, LabelString : char^M })
+  var
+    send : bool;
+    count : int32;
+  let
+    count= (0) -> (if pre (count) >= N then (0) else (pre (count) + 1));
+    send= count = 0;
+    o= { Emit:send, String_size:M, LabelString:i };
+  tel
+
+  node SendUpdatedList<<N>>(i : 'T^N)
+    returns (o : { Emit : bool^N, EntryIndex : uint16^N, Element : 'T^N })
+  var
+    acc
+    : {
+      Emit : bool^N,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^N,
+      Element : 'T^N
+    };
+    _L1
+    : {
+      Emit : bool^N,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^N,
+      Element : 'T^N
+    };
+    _L2
+    : {
+      Emit : bool^N,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^N,
+      Element : 'T^N
+    };
+    _L3 : 'T^N;
+    _L4 : { Emit : bool^N, EntryIndex : uint16^N, Element : 'T^N };
+  let
+    _L1= ( foldi (#1 InsertIfChanged <<N>>) <<N>>)(_L2, _L3);
+    _L2=
+      #8{
+          Emit:(false)#9^N,
+          NumberOfItems:(0 #2 : uint16),
+          EntryIndex:((65535 #3 : uint16))#10^N,
+          Element:i };
+    _L3= i;
+    o= _L4;
+    acc= _L1;
+    _L4= #6{ Emit:acc#7.Emit, EntryIndex:acc#8.EntryIndex, Element:acc#9.Element };
+  tel
+
+  node private InsertIfChanged<<N>>(
+      index : uint16;
+      acc
+      : {
+        Emit : bool^N,
+        NumberOfItems : uint16,
+        EntryIndex : uint16^N,
+        Element : 'T^N
+      };
+      elnt : 'T)
+    returns (
+      acc_out
+      : {
+        Emit : bool^N,
+        NumberOfItems : uint16,
+        EntryIndex : uint16^N,
+        Element : 'T^N
+      })
+  var
+    _L1 : 'T;
+    _L2 : uint16;
+    _L3
+    : {
+      Emit : bool^N,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^N,
+      Element : 'T^N
+    };
+    _L4 : bool;
+    _L5 : 'T;
+    _L6 : bool;
+    _L7
+    : {
+      Emit : bool^N,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^N,
+      Element : 'T^N
+    };
+    _L8 : 'T^N;
+    _L9 : 'T^N;
+    _L11
+    : {
+      Emit : bool^N,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^N,
+      Element : 'T^N
+    };
+    _L12 : 'T;
+    _L13 : uint16;
+    _L14 : uint16^N;
+    _L15 : uint16^N;
+    _L16 : uint16;
+    _L17 : bool^N;
+    _L18 : bool^N;
+    _L19 : bool;
+  let
+    _L1= elnt;
+    _L2= index;
+    acc_out= _L7;
+    _L3= acc;
+    _L4= (false) #1 -> (_L6);
+    _L5= #1 pre (_L1);
+    _L6= _L5 #1 <> _L1;
+    _L7= #1 if _L4 then (_L11) else (_L3);
+    _L8= acc#1.Element;
+    _L9= (_L8 #1 with [_L16] = _L12);
+    _L11= #1{ Emit:_L17, NumberOfItems:_L13, EntryIndex:_L14, Element:_L9 };
+    _L12= elnt;
+    _L13= acc#3.NumberOfItems #3 + 1;
+    _L14= (_L15 #2 with [_L16] = _L2);
+    _L15= acc#7.EntryIndex;
+    _L16= acc#5.NumberOfItems;
+    _L17= (_L18 #3 with [_L16] = _L19);
+    _L18= acc#6.Emit;
+    _L19= true;
+  tel
+
+  node SendUpdatedStringList<<ListSize, StringSize>>(
+      i : char^StringSize^ListSize)
+    returns (
+      o
+      : {
+        Emit : bool^ListSize,
+        StringIndex : uint16^ListSize,
+        StringSize : uint16^ListSize,
+        Element : char^StringSize^ListSize
+      })
+  var
+    acc
+    : {
+      Emit : bool^ListSize,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^ListSize,
+      Element : char^StringSize^ListSize
+    };
+    _L1
+    : {
+      Emit : bool^ListSize,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^ListSize,
+      Element : char^StringSize^ListSize
+    };
+    _L2
+    : {
+      Emit : bool^ListSize,
+      NumberOfItems : uint16,
+      EntryIndex : uint16^ListSize,
+      Element : char^StringSize^ListSize
+    };
+    _L3 : char^StringSize^ListSize;
+    _L4
+    : {
+      Emit : bool^ListSize,
+      StringIndex : uint16^ListSize,
+      StringSize : uint16^ListSize,
+      Element : char^StringSize^ListSize
+    };
+  let
+    _L1= ( foldi (#1 InsertIfChanged <<ListSize>>) <<ListSize>>)(_L2, _L3);
+    _L2=
+      #7{
+          Emit:(false)#10^ListSize,
+          NumberOfItems:(0 #3 : uint16),
+          EntryIndex:((65535 #4 : uint16))#11^ListSize,
+          Element:i };
+    _L3= i;
+    o= _L4;
+    acc= _L1;
+    _L4=
+      #6{
+          Emit:acc#7.Emit,
+          StringIndex:acc#8.EntryIndex,
+          StringSize:((StringSize #2 : uint16))#9^ListSize,
+          Element:acc#9.Element };
+  tel
+
+  node SendOnValChangedOrAtInit(i : 'T)
+    returns (o : { Emit : bool, Value : 'T })
+  var
+    send : bool;
+  let
+    send= (true) #2 -> (i #2 <> #2 pre (i));
+    o= #2{ Emit:send, Value:i };
+  tel
+
+end;
+
+
+/* xscade source: ../Calculator/libA661/a661_types.xscade */
+package a661_types
+  type msg_uint8 = { Emit : bool, Value : uint8 };
+
+  type msg_FR = { Emit : bool, Value : float32 };
+
+  type msg_bool = { Emit : bool, Value : bool };
+
+  type
+    msg_string255 = {
+      Emit : bool,
+      String_size : uint16,
+      LabelString : char^255
+    };
+
+  type
+    msg_bool_list_4 = {
+      Emit : bool^4,
+      EntryIndex : uint16^4,
+      Element : bool^4
+    };
+
+  type
+    msg_int_list_4 = {
+      Emit : bool^4,
+      EntryIndex : uint16^4,
+      Element : int32^4
+    };
+
+  type
+    msg_string_list_255_4 = {
+      Emit : bool^4,
+      StringIndex : uint16^4,
+      StringSize : uint16^4,
+      Element : char^255^4
+    };
+
+  type msg_XY = { Emit : bool, PosX : int32, PosY : int32 };
+
+  type msg_int32 = { Emit : bool, Value : int32 };
+
+  type msg_int16 = { Emit : bool, Value : int16 };
+
+  type msg_uint16 = { Emit : bool, Value : uint16 };
+
+  type msg_uint32 = { Emit : bool, Value : uint32 };
+
+  type msg_float = { Emit : bool, Value : float32 };
+
+end;
+
+/* $******* SCADE Suite KCG 32-bit 6.6.1 beta (build i1) ********
+** -
+** Generation date: 2021-03-18T11:28:11
+*************************************************************$ */

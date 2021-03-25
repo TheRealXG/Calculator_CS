@@ -1,0 +1,17 @@
+//! Source file: FACE/DM/DataModel/idlsA661CmdsElements.idl
+
+#ifndef _FACE_DM_DATAMODEL_IDLSA661CMDSELEMENTS
+#define _FACE_DM_DATAMODEL_IDLSA661CMDSELEMENTS
+
+module FACE
+{
+    module DM
+    {
+        module DataModel
+        {
+            typedef sequence<octet, 1048576> idlsA661CmdsElements;
+        };
+    };
+};
+
+#endif // _FACE_DM_DATAMODEL_IDLSA661CMDSELEMENTS

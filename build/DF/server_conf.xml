@@ -1,0 +1,82 @@
+<!---=-=-=-  OPTIONS -=-=-=-
+ -=-=-=-
+ Under options section, option parameters can be set using following format:
+    <param name="parameter_name" type="int|float|bool|string" value="value_string"/>
+
+ List of available options:
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+                                  DEFAULT               
+ NAME                     TYPE    VALUE    DESCRIPTION
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+ pointers_nb              int     1        number of pointer devices
+ keyboards_nb             int     1        number of keyboard devices
+ touch_points_nb          int     0        number of touch point used in tactile devices 
+                                           (0 means no tactile device)
+ gesture_scope            int     0        gesture recognizer scope:
+                                           - 0 means no gesture, 
+                                           - 1 means one gesture per Window,
+                                           - 2 means one gesture per DU
+ dev_buffer_size          int     32       size of device buffers (in number of elements)
+ event_queue_size         int     64       size of event queue (in number of events)
+ event_pool_commands      bool    false    indicate how events are sent to the UA. 
+                                           - false means that each event is sent via a A661 buffer, 
+                                           - true means that all events queued for a cycle are sent in a single A661 buffer
+ touch_as_mouse_event     bool    true     when using tactile screen, the touch events are processed also as mouse events
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+ texture_width_max        int     1024     maximum width of SGL texture in pixels
+ texture_height_max       int     1024     maximum height of SGL texture in pixels
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+ cycle_duration           int     20       SCADE server cycle duration in milliseconds 
+ cyclic_notification_rate int     10000    indicate the frequency in milliseconds for sending 
+                                           A661_NOTE_CYCLIC_ACTIVATION notification (0 means the event is never sent)
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+ Gesture recognizer option parameters:
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+                                         DEFAULT               
+ NAME                             TYPE   VALUE     DESCRIPTION
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+ Gesture_NbTouchEvent             int    20        Max number of bufferized touch events used for gesture recognition 
+ Gesture_MultiPoint_Delay         int    100000    Max delay in microseconds to take into account touch points for the gesture
+ Gesture_Still_Threshold          float  20.0      Max tolerance in hundrenth of millimeters to detect "still" gesture
+ Gesture_Tap_Duration             int    100000    Max duration in microseconds to detect Tap gesture
+ Gesture_DoubleTap_Threshold      float  200.0     Max distance in hundrenth of millimeters between the 2 taps to detect DoubleTapGesture
+ Gesture_DoubleTap_Delay          int    150000    Delay in microseconds between 2 taps to detect DoubleTap gesture
+ Gesture_PressHold_Duration       int    1000000   Duration in microseconds to detect PressHold gesture
+ Gesture_Pinch_Start_Threshold    float  0.05      Initial move threshold in percentage of scale to detect Pinch
+ Gesture_Pinch_Update_Threshold   float  0.02      Threshold in percentage of scale to generate Update event
+ Gesture_Rotate_Start_Threshold   float  0.5       Initial rotation threshold in degrees to detect Rotate
+ Gesture_Rotate_Update_Threshold  float  0.2       Threshold in degrees to generate Update event
+ Gesture_Drag_Start_Threshold     float  20.0      Initial move threshold in hundrenth of millimeters to detect Drag
+ Gesture_Drag_Update_Threshold    float  20.0      Threshold in hundrenth of millimeters to generate Update event
+ Gesture_Flick_Threshold          float  1000.0    Speed threshold (in hundrenth of millimeters per second) to detect Flick
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+ Widgets / Extensions specific option parameters
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+ cursor_blink_duration            int    300       Widgets with editable string: duration of the cursor blink in milliseconds
+ entry_valid_delay                int    3000      Widgets with Enable with UA validation: delay in milliseconds to take into account 
+                                                   A661_ENTRY_VALID message
+ double_click_max_duration        int    600       CursorEventsExtension: maximum duration in milliseconds between the 2 clicks 
+                                                   for A661_CURSOR_DOUBLE_CLICKED event 
+ focus_stop_timeout               int    800       FocusStopExtension: timeout in milliseconds before focus can moved to another widget
+ Gesture_DirFlick_Threshold       float  200.0     GestureArea widget: value used to determine when to detect DirFlick gesture
+                                                   - if value is negative, the direction of the DirFlick corresponds to the greater speed on X or Y axis
+                                                   - otherwise, the DirFlick is detected only if speed on the other axis is less than the threshold value
+ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-->
+<server_conf>
+  <options></options>
+  <display_conf>
+    <du width="384" height="512" ratio_x="20.0" ratio_y="20.0"></du>
+    <conf>
+      <window du_id="1" x1="0.0" y1="0.0" x2="7679.0" y2="10239.0">
+        <layer app_id="1" layer_id="1" visible="true"></layer>
+      </window>
+    </conf>
+  </display_conf>
+  <connectors>
+<!--Connector definition template.-->
+<!-- Replace X, Y and Z with the respective values-->
+<!-- <ref id="X" app_id="Y" layer_id="Z" />-->
+</connectors>
+</server_conf>
