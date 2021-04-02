@@ -2,6 +2,6 @@
 
 #ifndef USER_MACROS_H
 #define USER_MACROS_H
-
+#include <rtems.h>
 
 #endif /*USER_MACROS_H*/

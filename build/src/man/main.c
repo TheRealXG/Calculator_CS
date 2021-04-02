@@ -172,7 +172,10 @@ static void usage(char* argv0)
     uaport_exit(1);
 }
 // -------------------------------------------------------------------------------------- 
-int main(int argc, char **argv)
+rtems_task Init(
+  rtems_task_argument ignored
+)
+//int main(int argc, char **argv)
 {
     a661_ushort i;
     a661_uchar  udp          = 0U;
@@ -181,12 +184,15 @@ int main(int argc, char **argv)
     char        appname[256] = "";
     a661_uchar  usage_flag   = 0U;
 
-#ifdef _WIN32
+    int argc = 0; //Old main.c function had this, just 0 out to skip for loop below.
+    char **argv; //Old main.c function had, just declare so it will compile.
+
+    #ifdef _WIN32
     /* Workaround for buffering issues with Cygwin-based terminals: */
     /* disable all buffering for stdout and stderr. */
     (void) setvbuf(stdout, NULL, _IONBF, 0U);
     (void) setvbuf(stderr, NULL, _IONBF, 0U);
-#endif
+    #endif
      
     /* Parse arguments */
     for (i = 1U; (i < argc); i++) {
@@ -253,5 +259,5 @@ int main(int argc, char **argv)
     
     FACE_UoP_entry(&g_ua);
 
-    return 0;
+    
 }

@@ -1,0 +1,59 @@
+#
+# Hello world Waf script
+#
+from __future__ import print_function
+
+rtems_version = "6"
+
+try:
+    import rtems_waf.rtems as rtems
+except:
+    print('error: no rtems_waf git submodule')
+    import sys
+    sys.exit(1)
+
+def init(ctx):
+    rtems.init(ctx, version = rtems_version, long_commands = True)
+
+def bsp_configure(conf, arch_bsp):
+    # Add BSP specific configuration checks
+    pass
+
+def options(opt):
+    rtems.options(opt)
+
+def configure(conf):
+    rtems.configure(conf, bsp_configure = bsp_configure)
+
+def build(bld):
+    rtems.build(bld)
+
+    bld(features = 'c cprogram',
+        target = 'rtems/calc.exe',
+        cflags = '-g -O2 -v -H',
+	includes = 'kcg man uaadaptor man/faceport include include/extern',
+        source = ['kcg/updateDisplay_Calc_Utils.c',
+                'kcg/root_Calc.c',
+                'kcg/kcg_consts.c',
+                'kcg/kcg_types.c',
+                'kcg/PushButtonAdaptor.c',
+                'kcg/Calc_A661_Root.c',
+                'kcg/SendStringOnValChanged_a661_util_16.c',
+                'kcg/key2Char_Calc.c',
+                'kcg/performFunction_Calc.c',
+                'kcg/valueEntry_Calc.c',
+                'man/main.c',
+                'man/init.c',
+                'man/printUtils.c',
+                'man/a661_data_buffer.c',
+                'man/memcpy.c',
+                'man/a661_socket.c',
+                'man/faceport/utils.c',
+                'man/faceport/sequence.c',
+                'man/faceport/UA_Simple_TSS.c',
+                'man/faceport/string.c',
+                'man/a661_face_interface.c',
+                'uaadaptor/Operator1_UAA_private.c',
+                'uaadaptor/Operator1_UAA.c',
+                'uaadaptor/Operator1_UAA_LAY_1.c'])
+
