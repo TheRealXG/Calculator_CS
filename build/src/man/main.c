@@ -177,6 +177,10 @@ rtems_task Init(
 )
 //int main(int argc, char **argv)
 {
+    rtems_status_code sc;
+
+    sc = rtems_bdbuf_init();
+
     a661_ushort i;
     a661_uchar  udp          = 0U;
     a661_ushort baseport     = A661_BASE_PORT;

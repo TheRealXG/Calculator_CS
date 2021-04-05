@@ -3,5 +3,8 @@
 #ifndef USER_MACROS_H
 #define USER_MACROS_H
 #include <rtems.h>
+#include <machine/rtems-bsd-commands.h>
+
+#include <rtems/libcsupport.h>
 
 #endif /*USER_MACROS_H*/
