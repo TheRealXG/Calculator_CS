@@ -117,11 +117,16 @@ void FACE_UoP_entry(a661_ua* ua)
     printf("FACE_UoP_init  appid=%d\n", ua->face_ua.appid);
     fflush(stdout);
     
+    printf("Suite init\n");
     suite_init();
+    printf("End Suite init. Socket init.\n");
     a661_socket_init();
+    printf("End socket init. face init.\n");
     a661_face_init();
+    printf("End face init.\n");
     
     err = a661_face_open_socket(&ua->face_ua, ua->udp);
+    printf("Open face socket\n");
     
     if (err) {
         // TBD
@@ -177,10 +182,6 @@ rtems_task Init(
 )
 //int main(int argc, char **argv)
 {
-    rtems_status_code sc;
-
-    sc = rtems_bdbuf_init();
-
     a661_ushort i;
     a661_uchar  udp          = 0U;
     a661_ushort baseport     = A661_BASE_PORT;

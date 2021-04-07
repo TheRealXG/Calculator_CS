@@ -33,10 +33,11 @@ def build(bld):
     rtems.build(bld)
 
     bld(features = 'c cprogram',
-        target = 'rtems/calc.exe',
-        cflags = '-g -O2 -v -H',
+        target = 'rtems/media01.exe', #'rtems/calc.exe',
+        cflags = '-g -O2',# -v -H',
 	    includes = 'kcg man uaadaptor man/faceport include include/extern',
-        source = ['kcg/updateDisplay_Calc_Utils.c',
+        source = ['man/test_main.c',
+                'kcg/updateDisplay_Calc_Utils.c',
                 'kcg/root_Calc.c',
                 'kcg/kcg_consts.c',
                 'kcg/kcg_types.c',
@@ -46,8 +47,8 @@ def build(bld):
                 'kcg/key2Char_Calc.c',
                 'kcg/performFunction_Calc.c',
                 'kcg/valueEntry_Calc.c',
-                'man/main.c',
-                'man/init.c',
+                #'man/main.c',
+                #'man/init.c',
                 'man/printUtils.c',
                 'man/a661_data_buffer.c',
                 'man/memcpy.c',
@@ -60,4 +61,3 @@ def build(bld):
                 'uaadaptor/Operator1_UAA_private.c',
                 'uaadaptor/Operator1_UAA.c',
                 'uaadaptor/Operator1_UAA_LAY_1.c'])
-
