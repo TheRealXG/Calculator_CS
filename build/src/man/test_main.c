@@ -39,6 +39,15 @@
 
 #include <sys/param.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <ctype.h>
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -251,10 +260,10 @@ void FACE_UoP_entry(a661_ua* ua)
     }
     else {
         while (1) {
-        	printf("Wait for buffer\n");
+        	
             /* Note: this function always returns exactly 1 A661 block, if any. */
             a661_error err = a661_face_recv(&ua->face_ua, &recv_buffer);
-            printf("Got buffer\n");
+            
             if (a661_data_buffer_count(&recv_buffer) > 0) {
                 /* Call UAA receive function to decode each received A661 block. */
                 a661_ulong block_size = next_block_size(&recv_buffer);
@@ -265,7 +274,7 @@ void FACE_UoP_entry(a661_ua* ua)
                 }
                 a661_data_buffer_clear(&recv_buffer);
             }
-            printf("Try to calculate\n");
+
             Calc_A661_Root(&inC, &outC);
 
             Operator1_UAA_receive_clear(&inC, NULL);
@@ -282,6 +291,40 @@ void FACE_UoP_entry(a661_ua* ua)
         a661_face_close_socket(&ua->face_ua);
     }
     printf("END FACE_UoP_init\n");
+}
+
+const char* print_ipaddress(char iface[])
+{
+	int fd;
+	struct ifreq ifr;
+	
+    // replace with your interface name
+    // or ask user to input
+    
+	//char iface[] = "cgem0";
+	
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+
+	//Type of address to retrieve - IPv4 IP address
+	ifr.ifr_addr.sa_family = AF_INET;
+
+	//Copy the interface name in the ifreq structure
+	strncpy(ifr.ifr_name , iface , IFNAMSIZ-1);
+
+	ioctl(fd, SIOCGIFADDR, &ifr);
+
+	close(fd);
+
+	return inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr);
+
+	//display result
+	//printf("%s - %s\n" , iface , inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr) );
+
+}
+
+bool prefix(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
 }
 
 static void
@@ -301,13 +344,25 @@ test_main(void)
 //	sc = rtems_record_start_server(1, 1234, 1);
 //	assert(sc == RTEMS_SUCCESSFUL);
 	
-	sc = rtems_shell_init("SHLL", 16 * 1024, 1, CONSOLE_DEVICE_NAME,
-	    false, true, NULL);
-	assert(sc == RTEMS_SUCCESSFUL);
+	//printf("IP address is: %s\n", print_ipaddress("cgem0"));
+	//printf("Prefix matches 169: %d\n", prefix("169",print_ipaddress("cgem0")));
+
+	//sc = rtems_shell_init("SHLL", 16 * 1024, 1, CONSOLE_DEVICE_NAME,
+	//    false, true, NULL);
+	//assert(sc == RTEMS_SUCCESSFUL);
 
 	printf("***!!!START UA INIT!!!***\n");
 
+	//printf("IP address is: %s\n", print_ipaddress("cgem0"));
+	//printf("Prefix matches 169: %d\n", prefix("169",print_ipaddress("cgem0")));
 
+	while(1 != prefix("169",print_ipaddress("cgem0")))
+	{
+		printf("Waiting for IP\n");
+		sleep(1);
+	}
+
+	printf("Have IP address: %s\n", print_ipaddress("cgem0"));
     a661_ushort i;
     a661_uchar  udp          = 0U;
     a661_ushort baseport     = A661_BASE_PORT;
@@ -383,6 +438,7 @@ test_main(void)
     }
 
     FACE_UoP_entry(&g_ua);
+	
 
 	printf("***!!!FINISH UA INIT!!!***\n");
 	exit(0);
@@ -397,12 +453,15 @@ early_initialization(void)
 
 	sc = rtems_bdbuf_init();
 	assert(sc == RTEMS_SUCCESSFUL);
+	printf("BDBUF Init\n");
 
 	sc = rtems_media_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
+	printf("Media Init\n");
 
 	sc = rtems_media_listener_add(media_listener, NULL);
 	assert(sc == RTEMS_SUCCESSFUL);
+	printf("Add media listener\n");
 
 	sc = rtems_media_server_initialize(
 		200,
@@ -411,6 +470,7 @@ early_initialization(void)
 		RTEMS_DEFAULT_ATTRIBUTES
 	);
 	assert(sc == RTEMS_SUCCESSFUL);
+	printf("media server Init\n");
 }
 
 #define DEFAULT_NETWORK_DHCPCD_ENABLE

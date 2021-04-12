@@ -34,7 +34,7 @@ def build(bld):
 
     bld(features = 'c cprogram',
         target = 'rtems/media01.exe', #'rtems/calc.exe',
-        cflags = '-g -O2',# -v -H',
+        cflags = '-O2',# -g -v -H',
 	    includes = 'kcg man uaadaptor man/faceport include include/extern',
         source = ['man/test_main.c',
                 'kcg/updateDisplay_Calc_Utils.c',
