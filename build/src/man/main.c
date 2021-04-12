@@ -1,12 +1,66 @@
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
+/**
+ * @file
+ *
+ * @brief Code used to test the Media Manager.
+ *
+ * Telnet daemon (telnetd) and FTP daemon (ftpd) are started. Events are recorded.
+ */
 
+/*
+ * Copyright (c) 2010-2016 embedded brains GmbH.  All rights reserved.
+ *
+ *  embedded brains GmbH
+ *  Dornierstr. 4
+ *  82178 Puchheim
+ *  Germany
+ *  <rtems@embedded-brains.de>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+#include <sys/param.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <ctype.h>
+
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <rtems/bdbuf.h>
+#include <rtems/console.h>
+#include <rtems/ftpd.h>
+#include <rtems/media.h>
+#include <rtems/record.h>
+#include <rtems/recordserver.h>
+#include <rtems/shell.h>
+#include <rtems/telnetd.h>
 
 #include "a661_types.h"
 #include "a661_error.h"
@@ -20,25 +74,14 @@
 #include "Calc_A661_Root.h"   // SCADE Suite KCG include
 #include "Operator1_UAA.h"   // UA Adaptor include
 
-/* Support package hierarchy:
+#define TEST_NAME "LIBBSD MEDIA 1"
+#define TEST_STATE_USER_INPUT 1
 
-main ----------------------------------  Suite & UAA generated code
-  a661_face_interface
-    UA_Simple_TSS
-      a661_socket
-        a661_data_buffer
-*/
-
-
-// -------------------------------------------------------------------------------------- 
 #define NET_BUFFER_SZ (100000)
 
-#ifndef _WIN32
-    #include <time.h>
-    struct timespec ts = { .tv_sec = 0, .tv_nsec = 200 * 1000000 };
-#endif
+#include <time.h>
+struct timespec ts = { .tv_sec = 0, .tv_nsec = 200 * 1000000 };
 
-// -------------------------------------------------------------------------------------- 
 typedef struct _a661_ua
 {
     char          appname[128];
@@ -46,7 +89,6 @@ typedef struct _a661_ua
     a661_ushort   baseport;
     a661_face_ua  face_ua;
 } a661_ua;
-
 // -------------------------------------------------------------------------------------- 
 a661_ua g_ua = { "", 1U, 0U, A661_BASE_PORT };
 
@@ -56,36 +98,20 @@ a661_data_buffer send_buffer;
 inC_Calc_A661_Root inC;
 outC_Calc_A661_Root outC;
 
-// -------------------------------------------------------------------------------------- 
-void uaport_exit(int code)
+void
+uaport_exit(int code)
 {
     exit(code);
 }
-// -------------------------------------------------------------------------------------- 
-void uaport_flush_logfile()
-{
-    // Stub for Simple_TSS
-}
-// -------------------------------------------------------------------------------------- 
-void a661_report_simple_error(const char_t * message, a661_ushort value)
-{
-    printf("%s (%d)\n", message, value);
-    fflush(stdout);
-}
-// -------------------------------------------------------------------------------------- 
-void a661_report_simple_error_format1(const char_t * message, char_t * name, a661_long value1)
-{
-    printf(message, name, value1);
-}
-// -------------------------------------------------------------------------------------- 
-void suite_init(void)
-{
-    a661_data_buffer_init(&send_buffer, NET_BUFFER_SZ);
-    a661_data_buffer_init(&recv_buffer, NET_BUFFER_SZ);
 
-    Calc_A661_Root_reset(&outC);
+static void
+usage(char* argv0)
+{
+    printf("Usage: %s [-help] [-udp] [-baseport <%d>] [-appid <1>] [-name <appname>]\n", 
+            argv0, A661_BASE_PORT);
+    uaport_exit(1);
 }
-// -------------------------------------------------------------------------------------- 
+
 a661_ulong next_block_size(a661_data_buffer* buf)
 {
     a661_ulong count = a661_data_buffer_count(buf);
@@ -108,7 +134,21 @@ a661_ulong next_block_size(a661_data_buffer* buf)
     }
     return block_size;
 }
-// -------------------------------------------------------------------------------------- 
+
+void suite_init(void)
+{
+    a661_data_buffer_init(&send_buffer, NET_BUFFER_SZ);
+    a661_data_buffer_init(&recv_buffer, NET_BUFFER_SZ);
+
+    Calc_A661_Root_reset(&outC);
+}
+
+void a661_report_simple_error(const char_t * message, a661_ushort value)
+{
+    printf("%s (%d)\n", message, value);
+    fflush(stdout);
+}
+
 void FACE_UoP_entry(a661_ua* ua)
 {
     FACE_RETURN_CODE_TYPE return_code;
@@ -117,25 +157,21 @@ void FACE_UoP_entry(a661_ua* ua)
     printf("FACE_UoP_init  appid=%d\n", ua->face_ua.appid);
     fflush(stdout);
     
-    printf("Suite init\n");
     suite_init();
-    printf("End Suite init. Socket init.\n");
     a661_socket_init();
-    printf("End socket init. face init.\n");
     a661_face_init();
-    printf("End face init.\n");
     
     err = a661_face_open_socket(&ua->face_ua, ua->udp);
-    printf("Open face socket\n");
     
     if (err) {
         // TBD
     }
     else {
         while (1) {
+        	
             /* Note: this function always returns exactly 1 A661 block, if any. */
             a661_error err = a661_face_recv(&ua->face_ua, &recv_buffer);
-
+            
             if (a661_data_buffer_count(&recv_buffer) > 0) {
                 /* Call UAA receive function to decode each received A661 block. */
                 a661_ulong block_size = next_block_size(&recv_buffer);
@@ -146,7 +182,7 @@ void FACE_UoP_entry(a661_ua* ua)
                 }
                 a661_data_buffer_clear(&recv_buffer);
             }
-            
+
             Calc_A661_Root(&inC, &outC);
 
             Operator1_UAA_receive_clear(&inC, NULL);
@@ -156,12 +192,8 @@ void FACE_UoP_entry(a661_ua* ua)
                 /* Note: this function will remove any sent data from the buffer. */
                 a661_face_send(&ua->face_ua, &send_buffer);
             }
-            
-            #ifdef _WIN32
-              Sleep(200);
-            #else
-              nanosleep(&ts, &ts);
-            #endif
+
+            nanosleep(&ts, &ts);
             
         }
         a661_face_close_socket(&ua->face_ua);
@@ -169,19 +201,44 @@ void FACE_UoP_entry(a661_ua* ua)
     printf("END FACE_UoP_init\n");
 }
 
-// -------------------------------------------------------------------------------------- 
-static void usage(char* argv0)
+// Get IP address of the interface name passed in 
+const char* print_ipaddress(char iface[])
 {
-    printf("Usage: %s [-help] [-udp] [-baseport <%d>] [-appid <1>] [-name <appname>]\n", 
-            argv0, A661_BASE_PORT);
-    uaport_exit(1);
+	int fd;
+	struct ifreq ifr;
+	
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+
+	//Type of address to retrieve - IPv4 IP address
+	ifr.ifr_addr.sa_family = AF_INET;
+
+	//Copy the interface name in the ifreq structure
+	strncpy(ifr.ifr_name , iface , IFNAMSIZ-1);
+
+	ioctl(fd, SIOCGIFADDR, &ifr);
+
+	close(fd);
+
+	return inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr);
 }
-// -------------------------------------------------------------------------------------- 
-rtems_task Init(
-  rtems_task_argument ignored
-)
-//int main(int argc, char **argv)
+
+// Function to compare prefixes in a string
+bool prefix(const char *pre, const char *str)
 {
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
+
+static void
+main(void)
+{
+	// Wait for the NIC to come up and acquire an IP. This is hardcoded to a 169 IP right now.
+	while(1 != prefix("169",print_ipaddress("cgem0")))
+	{
+		sleep(1);
+	}
+	printf("***!!!START UA INIT!!!***\n");
+
+	printf("Have IP address: %s\n", print_ipaddress("cgem0"));
     a661_ushort i;
     a661_uchar  udp          = 0U;
     a661_ushort baseport     = A661_BASE_PORT;
@@ -192,12 +249,6 @@ rtems_task Init(
     int argc = 0; //Old main.c function had this, just 0 out to skip for loop below.
     char **argv; //Old main.c function had, just declare so it will compile.
 
-    #ifdef _WIN32
-    /* Workaround for buffering issues with Cygwin-based terminals: */
-    /* disable all buffering for stdout and stderr. */
-    (void) setvbuf(stdout, NULL, _IONBF, 0U);
-    (void) setvbuf(stderr, NULL, _IONBF, 0U);
-    #endif
      
     /* Parse arguments */
     for (i = 1U; (i < argc); i++) {
@@ -261,8 +312,35 @@ rtems_task Init(
         memset(g_ua.appname, sizeof(g_ua.appname), 0);
         strncpy(g_ua.appname, appname, sizeof(g_ua.appname)-1);
     }
-    
-    FACE_UoP_entry(&g_ua);
 
-    
+    FACE_UoP_entry(&g_ua);
+	
+	exit(0);
 }
+
+#define DEFAULT_EARLY_INITIALIZATION
+
+static void
+early_initialization(void)
+{
+}
+
+#define DEFAULT_NETWORK_DHCPCD_ENABLE
+
+#define CONFIGURE_MICROSECONDS_PER_TICK 1000
+
+#define CONFIGURE_MAXIMUM_DRIVERS 32
+
+#define CONFIGURE_FILESYSTEM_DOSFS
+
+#define CONFIGURE_MAXIMUM_PROCESSORS 32
+
+#define CONFIGURE_RECORD_PER_PROCESSOR_ITEMS 4096
+
+#define CONFIGURE_RECORD_EXTENSIONS_ENABLED
+
+#include <rtems/bsd/test/default-network-init.h>
+
+#include <bsp/irq-info.h>
+
+#include <rtems/netcmds-config.h>

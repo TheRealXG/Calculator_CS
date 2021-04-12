@@ -188,7 +188,7 @@ Init(rtems_task_argument arg)
 	/*
 	 * Default the syslog priority to 'debug' to aid developers.
 	 */
-	rtems_bsd_setlogpriority("debug");
+	//rtems_bsd_setlogpriority("debug");
 
 	(void)arg;
 
@@ -236,7 +236,7 @@ Init(rtems_task_argument arg)
 #endif
 	default_network_dhcpcd();
 
-	test_main();
+	main();
 
 	assert(0);
 }

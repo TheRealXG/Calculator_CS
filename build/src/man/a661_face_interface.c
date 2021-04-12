@@ -184,37 +184,29 @@ FACE_TSS_CONNECTION_ID_TYPE ua_get_connection_id(a661_face_ua* ua)
 // --------------------------------------------------------------------------------------------------------------------
 a661_error a661_face_open_socket(a661_face_ua* ua, a661_uchar udp)
 {
-    printf("Start to open socket\n");
     a661_error err = A661_NO_ERROR;
     FACE_string_return string_code = 0;
 
-    printf("check is ua is connected\n");
     if (ua_is_connected(ua)) {
-        printf("UA connected\n");
         a661_report_simple_error("TSS connection attempted twice for UA", ua_get_appid(ua));
         err = A661_ERR_BAD_COMMAND;
     }
     else {
-        printf("UA not connected\n");
         /* Compute a connection name */
         snprintf(ua->connection_name_cstr, 
                  sizeof(ua->connection_name_cstr), 
                  "UA:%d", ua_get_appid(ua));
-        printf("connection name computer\n");
         string_code = FACE_string_init_unmanaged(
                           &ua->connection_name, 
                           ua->connection_name_cstr, 
                           (FACE_unsigned_long)strlen(ua->connection_name_cstr), 
                           sizeof(ua->connection_name_cstr) - 1);
-        printf("FACE string init unmanaged\n");
         /* Check errors */
         if (string_code != FACE_STRING_NO_ERROR) {
-            printf("FACE string errors\n");
             a661_report_simple_error("TSS connection name failed for UA", ua_get_appid(ua));
             err = A661_ERR_MEMORY_OVERLOAD;
         }
         else {
-            printf("FACE string NO errors\n");
             FACE_TIMEOUT_TYPE timeout = 0;
             FACE_TSS_CONNECTION_ID_TYPE connection_id = 0;
             FACE_TSS_MESSAGE_SIZE_TYPE max_message_size = 0;
@@ -222,7 +214,6 @@ a661_error a661_face_open_socket(a661_face_ua* ua, a661_uchar udp)
             FACE_interface_return interface_code = 0;
 
             /* Create connection */
-            printf("Create connection\n");
             interface_code = FACE_TSS_Base_Create_Connection(
                                  base_obj, 
                                  &ua->connection_name, 
@@ -230,17 +221,14 @@ a661_error a661_face_open_socket(a661_face_ua* ua, a661_uchar udp)
                                  &connection_id, 
                                  &max_message_size, 
                                  &return_code);
-            printf("Connection creation run\n");
             if ((interface_code != FACE_INTERFACE_NO_ERROR) || 
                 (return_code != FACE_RETURN_CODE_TYPE_NO_ERROR)) {
-                printf("Connection errors\n");
                 ua_set_connected(ua, 0U);
                 ua_set_connection(ua, 0, 0);
                 a661_report_simple_error("TSS create connection failed for UA", ua_get_appid(ua));
                 err = A661_ERR_BAD_COMMAND;
             }
             else {
-                printf("Set connected\n");
                 /* Not fully connected until first message is received. */
                 ua_set_connected(ua, 0U);
                 ua_set_connection(ua, connection_id, max_message_size);
