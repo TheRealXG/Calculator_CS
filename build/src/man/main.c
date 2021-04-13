@@ -202,7 +202,7 @@ void FACE_UoP_entry(a661_ua* ua)
 }
 
 // Get IP address of the interface name passed in 
-const char* print_ipaddress(char iface[])
+char* get_ipaddress(char iface[])
 {
 	int fd;
 	struct ifreq ifr;
@@ -222,23 +222,43 @@ const char* print_ipaddress(char iface[])
 	return inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr);
 }
 
-// Function to compare prefixes in a string
-bool prefix(const char *pre, const char *str)
+// Checks to see if the IP ends in 0.0.0 which it does while still initializing the NIC.
+// Return 1 if it ends in 0.0.0
+bool check_ip(char *str)
 {
-    return strncmp(pre, str, strlen(pre)) == 0;
+    char *str2;
+    unsigned char value[4] = {0};
+    size_t index = 0;
+
+    str2 = str; /* save the pointer */
+    while (*str) {
+        if (isdigit((unsigned char)*str)) {
+            value[index] *= 10;
+            value[index] += *str - '0';
+        } else {
+            index++;
+        }
+        str++;
+    }
+    if(value[1] == 0 && value[2] == 0 && value[3] == 0)
+    {
+        return 1;
+    }else
+    {
+        return 0;
+    }
 }
 
 static void
 main(void)
-{
+{    
 	// Wait for the NIC to come up and acquire an IP. This is hardcoded to a 169 IP right now.
-	while(1 != prefix("169",print_ipaddress("cgem0")))
+    while(1 == check_ip(get_ipaddress("cgem0")))
 	{
 		sleep(1);
 	}
 	printf("***!!!START UA INIT!!!***\n");
 
-	printf("Have IP address: %s\n", print_ipaddress("cgem0"));
     a661_ushort i;
     a661_uchar  udp          = 0U;
     a661_ushort baseport     = A661_BASE_PORT;
