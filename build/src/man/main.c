@@ -37,10 +37,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <net/if.h>
@@ -48,19 +44,9 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <rtems/bdbuf.h>
-#include <rtems/console.h>
-#include <rtems/ftpd.h>
-#include <rtems/media.h>
-#include <rtems/record.h>
-#include <rtems/recordserver.h>
-#include <rtems/shell.h>
-#include <rtems/telnetd.h>
 
 #include "a661_types.h"
 #include "a661_error.h"
