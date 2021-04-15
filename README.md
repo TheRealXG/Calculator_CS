@@ -22,7 +22,7 @@ This can be run in several manners. Both the server and backend can run on the s
 This section will cover setting up a new RTEMS 6 install, adding the LIBBSD networking package, and building a sample BSP (Xilinx A9 QEMU) with this LIBBSD networking package. Finally it will cover compiling the application and some simple network configuration options.  
 
 ### RTEMS Install <a name="install"></a>
-  1. This has been testing Ubuntu 18.04 and 20.10 though additionally required dependencies may vary. With Ubuntu 18.04 LTS all necessary dependencies to install RTEMS should be handled in the install process, but if anything is found, simply use the "apt-install" functionality to install them.  
+  1. This has been tested with Ubuntu 18.04 and 20.10 though additionally required dependencies may vary. With Ubuntu 18.04 LTS all necessary dependencies to install RTEMS should be handled in the install process, but if anything is found, simply use the "apt-install" functionality to install them.  
   2.  `export PREFIX=$HOME/quick-start/rtems/6`  
   3. `mkdir -p $HOME/quick-start/src`  
   4. `cd $HOME/quick-start/src/`  
@@ -56,7 +56,7 @@ This section will cover setting up a new RTEMS 6 install, adding the LIBBSD netw
 
 
 ### RTEMS LIBSBSD <a name="libbsd"></a>
-LIBBSD is a FreeBSD Networking library that has been ported to RTEMS to replace the legacy RTEMS networking stack. This must be installed as a separate add-on. Because it replaces the legacy RTEMS Networking the BSP must be built with the RTEMS_NETWORKING OFF (as was done in the step above) and the LIBBSD library takes the place of it with some additinoal wscript/waf configuration options.  
+LIBBSD is a FreeBSD Networking library that has been ported to RTEMS to replace the legacy RTEMS networking stack. This must be installed as a separate add-on. Because it replaces the legacy RTEMS Networking the BSP must be built with the RTEMS_NETWORKING OFF (as was done in the step above) and the LIBBSD library takes the place of it with some additional wscript/waf configuration options.  
   1. `cd $HOME/quick-start/src`  
   2. `git clone git://git.rtems.org/rtems-libbsd.git`  
   3. `cd rtems-libbsd`  
@@ -89,7 +89,7 @@ RTEMS LibBSD                                : arm/xilinx_zynq_a9_qemu
   5. `./waf`  
 
 #### Changes That Were Made
-The steps abve are all that is needed to compile the calculator UA for use in RTEMS and QEMU with this BSP since it is already setup in repository. This will detail some of the changes that were made to use LIBBSD and RTEMS for this application. This is not necessarily comprehensive, but highlights some of the changes made.  
+The steps abve are all that are needed to compile the calculator UA for use in RTEMS and QEMU with this BSP since it is already setup in the repository. This will explain some of the changes that were made to use LIBBSD and RTEMS for this application. This is not necessarily comprehensive, but highlights some of the changes made.  
   
 RTEMS uses the WAF build process. The rtems_waf submodule provides the python WAF build tool. WAF uses the `wscript` file to script the build process. This file had to be modified to include LIBBSD as part of the build process, in place of the legacy RTEMS networking library. The wscript imports the `rtems_waf.rtems_bsd` python file. And then the `rtems_bsd` functions are called in their corresponding rtems functions in the wscript. E.g., `rtems_bsd.init(ctx)` in `def init(ctx):` in `wscript`. See the following excerpt. 
 ```python
@@ -131,7 +131,7 @@ ifconfig br0 up;
 brctl show;
 dhclient -v br0;
 ```  
-This will give the IP address assigned to the bridge (and so both the localhost ethernet and the tap QEMU will use and will be used in a later step).  
+This will give the IP address assigned to the bridge (which both the localhost ethernet and the tap for QEMU will use. This IP will be used in a later step).  
   
   b. After testing is complete, the tap can be removed by restarting the machine or by running `sudo ./cleanup_tap.sh enp0s3` (`enp0s3` is the ethernet interface used above) which will delete the tap and bridge and assign a new IP to the local ethernet interface.  
     The script is running the following commands:  
