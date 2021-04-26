@@ -86,7 +86,7 @@ default_network_ifconfig_hwif0(char *ifname)
 		"up",
 #else
 		"inet",
-		"10.18.0.3",
+		"10.18.0.4",
 		"netmask",
 		"255.255.0.0",
 #endif

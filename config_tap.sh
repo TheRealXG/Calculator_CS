@@ -23,7 +23,3 @@ ifconfig $1 up;
 ifconfig qtap up;
 ifconfig br0 up;
 brctl show;
-dhclient -v br0;
-
-echo "IP assigned to Bridge"
-ifconfig br0 | grep "inet "
