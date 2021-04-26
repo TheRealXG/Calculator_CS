@@ -226,6 +226,7 @@ bool check_ip(char *str)
         }
         str++;
     }
+    printf("IP Checked: %s\n", str2);
     if(value[1] == 0 && value[2] == 0 && value[3] == 0)
     {
         return 1;
@@ -238,7 +239,7 @@ bool check_ip(char *str)
 static void
 main(void)
 {    
-	// Wait for the NIC to come up and acquire an IP. This is hardcoded to a 169 IP right now.
+	// Wait for the NIC to come up and acquire an IP.
     while(1 == check_ip(get_ipaddress("cgem0")))
 	{
 		sleep(1);
@@ -331,7 +332,8 @@ early_initialization(void)
 {
 }
 
-#define DEFAULT_NETWORK_DHCPCD_ENABLE
+//#define DEFAULT_NETWORK_DHCPCD_ENABLE
+//#define DEFAULT_NETWORK_DHCPCD_NO_DHCP_DISCOVERY
 
 #define CONFIGURE_MICROSECONDS_PER_TICK 1000
 

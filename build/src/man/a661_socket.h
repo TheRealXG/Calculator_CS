@@ -18,7 +18,7 @@
 #endif
 
 #ifndef A661_DEFAULT_HOSTNAME
-#define A661_DEFAULT_HOSTNAME "10.0.2.15"
+#define A661_DEFAULT_HOSTNAME "10.18.0.1"
 #endif
 
 #ifndef A661_BASE_PORT
