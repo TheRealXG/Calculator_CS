@@ -106,7 +106,7 @@ default_network_route_hwif0(char *ifname)
 		"route",
 		"add",
 		"-host",
-		"10.18.0.2",
+		"10.18.0.3",
 		"-iface",
 		ifname,
 		NULL
@@ -115,7 +115,7 @@ default_network_route_hwif0(char *ifname)
 		"route",
 		"add",
 		"default",
-		"10.18.0.2",
+		"10.18.0.3",
 		NULL
 	};
 
