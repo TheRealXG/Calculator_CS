@@ -86,9 +86,9 @@ default_network_ifconfig_hwif0(char *ifname)
 		"up",
 #else
 		"inet",
-		"10.18.0.4",
+		NET_CFG_SELF_IP,
 		"netmask",
-		"255.255.0.0",
+		NET_CFG_NETMASK,
 #endif
 		NULL
 	};
@@ -106,7 +106,7 @@ default_network_route_hwif0(char *ifname)
 		"route",
 		"add",
 		"-host",
-		"10.18.0.3",
+		NET_CFG_GATEWAY_IP,
 		"-iface",
 		ifname,
 		NULL
@@ -115,7 +115,7 @@ default_network_route_hwif0(char *ifname)
 		"route",
 		"add",
 		"default",
-		"10.18.0.3",
+		NET_CFG_GATEWAY_IP,
 		NULL
 	};
 

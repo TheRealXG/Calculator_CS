@@ -5,6 +5,8 @@ from __future__ import print_function
 
 rtems_version = "6"
 
+import os
+
 try:
     import rtems_waf.rtems as rtems
     import rtems_waf.rtems_bsd as rtems_bsd
@@ -20,6 +22,11 @@ def init(ctx):
 def bsp_configure(conf, arch_bsp):
     # Add BSP specific configuration checks
     rtems_bsd.bsp_configure(conf, arch_bsp)
+    # Use config.inc to update network parameters
+    src_net_config = "include/rtems/bsd/test/network-config.h.in"
+    tgt_net_config = "include/rtems/bsd/test/network-config.h"
+    # Replace "-e" with " -e" due to bug in rtems_waf/rtems_bsd.py
+    os.system(conf.env.NET_CONFIG_SED.replace("-e", " -e") + " < " + src_net_config + " > " + tgt_net_config)    
     pass
 
 def options(opt):
@@ -31,7 +38,7 @@ def configure(conf):
 
 def build(bld):
     rtems.build(bld)
-
+    
     bld(features = 'c cprogram',
         target = 'rtems/calc.exe',
         cflags = '-O2 -g', # -v -H',

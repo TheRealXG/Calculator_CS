@@ -4,6 +4,7 @@
 docker network create --driver=bridge --subnet=10.18.0.0/16 --gateway=10.18.0.1 calc-bridge || true
 
 # Start A661 Server container
+xhost +local:docker
 docker run -ti -e DISPLAY --network=calc-bridge --hostname=server --name=server_con -v ~/Documents/calculator:/volume -v /tmp/.X11-unix:/tmp/.X11-unix -d a661_server
 
 sleep 5
