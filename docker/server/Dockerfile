@@ -1,14 +1,6 @@
 FROM ubuntu:latest
 RUN	apt-get update && \
 	 apt-get install -y --no-install-recommends sudo \
-	 uml-utilities \
-	 bridge-utils \
-	 iproute2 \
-	 net-tools \
-#	 isc-dhcp-client \
-	 netcat \
-	 iputils-ping \
-	 openssh-server \
 	 libsdl2-2.0-0 \
 	 libgl-dev \
 	 libopengl0
