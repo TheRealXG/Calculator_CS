@@ -1,6 +1,6 @@
 #!/bin/bash
 
-/volume/config_tap.sh eth0
+/volume/config_tap.sh eth0 nodhcp
 ip addr add 10.18.0.3/16 dev br0
 
 cd /volume/build/src

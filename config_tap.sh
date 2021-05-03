@@ -23,3 +23,10 @@ ifconfig $1 up;
 ifconfig qtap up;
 ifconfig br0 up;
 brctl show;
+
+if [ "$2" != "nodhcp" ]
+  then
+    dhclient -v br0;
+    echo "IP assigned to Bridge"
+    ifconfig br0 | grep "inet "
+fi
