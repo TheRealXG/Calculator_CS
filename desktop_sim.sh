@@ -17,7 +17,7 @@ if [ -f "$FILE" ]; then
 	     [nN][oO]|[nN])
 	 echo "No, using existing executable in Repo, build/calc.exe"
 	 # Replace the default path in input script to executable file
-	 sed -e "s|build/arm-rtems6-xilinx_zynq_a9_qemu/rtems|..|" start_calc_ua.sh.in  > start_calc_ua.sh
+	 sed -e 's|build/arm-rtems6-xilinx_zynq_a9_qemu/rtems|..|' start_calc_ua.sh.in  > start_calc_ua.sh
 	 break
 	        ;;
 	     *)
@@ -27,6 +27,8 @@ if [ -f "$FILE" ]; then
 	done
 else 
     echo "No recently compiled Calc executable exists, using existing executable in Repo, build/calc.exe"
+    # Replace the default path in input script to executable file
+    sed -e 's|build/arm-rtems6-xilinx_zynq_a9_qemu/rtems|..|' start_calc_ua.sh.in  > start_calc_ua.sh
 fi
 
 
@@ -37,7 +39,7 @@ docker network create --driver=bridge --subnet=10.18.0.0/16 --gateway=10.18.0.1 
 # Start A661 Server container
 xhost +local:docker
 server_name=server_con
-docker run -ti -e DISPLAY --network=$bridge_name --hostname=server --name=$server_name -v ~/Documents/calculator:/volume -v /tmp/.X11-unix:/tmp/.X11-unix -d therealxg/azure_pipeline:calc_a661_server
+docker run -ti -e DISPLAY --network=$bridge_name --hostname=server --name=$server_name -v "$(pwd)":/volume -v /tmp/.X11-unix:/tmp/.X11-unix -d therealxg/azure_pipeline:calc_a661_server
 
 sleep 3
 a661_pid=`pgrep A661S`
