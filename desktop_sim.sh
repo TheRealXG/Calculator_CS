@@ -1,5 +1,35 @@
 #!/bin/bash
 
+# Check if newly compiled application exists, if so ask if you want to use it
+FILE=build/src/build/arm-rtems6-xilinx_zynq_a9_qemu/rtems/calc.exe
+if [ -f "$FILE" ]; then
+    while true
+	do
+	 read -r -p "$FILE exists, would you like to use this Calc executable? [Y/n] " input
+	 
+	 case $input in
+	     [yY][eE][sS]|[yY])
+	 echo "Yes, using $FILE"
+	 # Copy input file with same path to executable file
+	 cp start_calc_ua.sh.in start_calc_ua.sh
+	 break
+	 ;;
+	     [nN][oO]|[nN])
+	 echo "No, using existing executable in Repo, build/calc.exe"
+	 # Replace the default path in input script to executable file
+	 sed -e "s|build/arm-rtems6-xilinx_zynq_a9_qemu/rtems|..|" start_calc_ua.sh.in  > start_calc_ua.sh
+	 break
+	        ;;
+	     *)
+	 echo "Invalid input..."
+	 ;;
+	 esac
+	done
+else 
+    echo "No recently compiled Calc executable exists, using existing executable in Repo, build/calc.exe"
+fi
+
+
 # Setup Docker User Defined Bridge or continue if it already exists
 bridge_name=calc-bridge
 docker network create --driver=bridge --subnet=10.18.0.0/16 --gateway=10.18.0.1 $bridge_name || true

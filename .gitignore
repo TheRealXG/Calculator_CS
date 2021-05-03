@@ -1,3 +1,6 @@
 build/src/build
 build/obj
+# This file is generated when reading in config.inc for RTEMS IP
 build/src/include/rtems/bsd/test/network-config.h
+# This is a file generated when running the 2 docker script
+start_calc_ua.sh
