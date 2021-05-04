@@ -54,3 +54,6 @@ tail --pid=$a661_pid -f /dev/null
 docker kill $ua_name
 docker rm $ua_name
 docker rm $server_name
+
+# Delete Docker network
+docker network rm $bridge_name
