@@ -199,32 +199,38 @@ It is possible to run the A661 GUI/Server and the Calculator backend with both r
 2. `cd build` then run `make clean all` to build the calculator UA.  
 3. In 1 terminal, from the base directory, run `./launchServer.sh`, this will launch the GUI and server backend.  
   a. This may not run initially if it is missing some graphics libraries necessary for the GUI.  Several commonly missing libaries are:  
-```
+    ```
     libsdl2-2.0-0  
     libgl-dev  
     libopengl0  
-```
-   Additionally, run `ldd A661server` to see which dependencies are required to run the application and which are missing. At which point you can install them via `sudo apt-get install X`, where X is the name of the library. This may require some Googling to determine the appropriate name for the installation.  
+    ```
+    Additionally, run `ldd A661server` to see which dependencies are required to run the application and which are missing. At which point you can install them via `sudo apt-get install X`, where X is the name of the library. This may require some Googling to determine the appropriate name for the installation.  
 4. In another terminal, also from the base directory, run `./launchUA.sh`.  This will execute the calculator backend. Now buttons can be pressed on the GUI and the actions will be passed back to the calculator to be processed and the results passed back to the GUI.  
 
 
 ### Localhost <a name="local"></a>
 This assumes QEMU has been installed, the [Tap](#network) has been created, and the Calculator was configured and compiled [WITH DHCP](#dhcp).  
-1. Verify *$GIT_REPO/build/src/man/a661_socket.h* has `#define A661_DEFAULT_HOSTNAME "10.0.2.15"` set to the IP address printed after running the Tap configuration. If it does not, then change the IP address to that, and [compile](#compiling). If the IP was correct, ensure it has been [compiled](#compiling) since cloning since the compiled binary (build/arm-rtems6-xilinx_zynq_a9_qemu/rtems/calc.exe) is not stored in the repo.  
+1. Verify *$GIT_REPO/build/src/man/a661_socket.h* has `#define A661_DEFAULT_HOSTNAME "X.X.X.X"` set to the IP address printed after running the Tap configuration. If it does not, then change the IP address to that, and [compile](#compiling). If the IP was correct, ensure it has been [compiled](#compiling) since cloning since the compiled binary (build/arm-rtems6-xilinx_zynq_a9_qemu/rtems/calc.exe) is not stored in the repo.  
 2. In 1 terminal, from the base directory, run `./launchServer.sh`, this will launch the GUI and server backend, as [above](#no_rtems).  
 3. In another terminal from *$GIT_REPO/build/src*, run: `sudo qemu-system-arm -serial null -serial mon:stdio -nographic   -M xilinx-zynq-a9 -m 256M   -net tap,ifname=qtap,script=no,downscript=no   -net nic,model=cadence_gem,macaddr=0e:b0:ba:5e:ba:12 -no-reboot  -kernel build/arm-rtems6-xilinx_zynq_a9_qemu/rtems/calc.exe`, this will launch QEMU and connect the calculator UA to the server. Once it starts printing `Data Buffer Print: ...` the connection has been established and the Calculator GUI can be utilized.  
 
 
 
 ### 2 Computers <a name="2_comp"></a>
-This same setup can be accomplished with the A661 GUI/Server running on a separate physical machine (and could be extended to containers) from the UA RTEMS/QEMU backend.  
+This same setup can be accomplished with the A661 GUI/Server running on a separate physical machine from the UA RTEMS/QEMU backend.  
 1. Ensure the A661 GUI/Server is avaible on the 2nd computer and can be launched, just like in the [Without RTEMS section](#no_rtems). It may also be valuable to ensure connectivity between the two computers as can be tested in [Troubleshooting](#connectivity).
-2. Update the IP address in *a661_socket.h* in the Calculator UA to match the IP of the new server machine, as was done in the first step [here](#local), and recompile.
+2. Update the IP address in *a661_socket.h* in the Calculator UA to match the IP of the new server machine, as was done in the first step [here](#local), enable [DHCP](#dhcp), and recompile.
 3. Then ensure the GUI/Server is running and simply launch the Calculator UA on the localhost in the same way as connecting to the [localhost](#local). `sudo qemu-system-arm -serial null -serial mon:stdio -nographic   -M xilinx-zynq-a9 -m 256M   -net tap,ifname=qtap,script=no,downscript=no   -net nic,model=cadence_gem,macaddr=0e:b0:ba:5e:ba:12 -no-reboot  -kernel build/arm-rtems6-xilinx_zynq_a9_qemu/rtems/calc.exe`  
 4. Now you should be able to interact with the GUI on one computer, and the traffic is sent over the network to the UA running in RTEMS in QEMU which will process the calculation and send the results back.  
 
 
-### Docker COntainers <a name="docker"></a>
+
+### Docker Containers <a name="docker"></a>
+The calculator can be run as a "Desktop Sim" setup where both applications are in Docker containers such that the only localhost dependencies are Linux and Docker. The GUI and A661 Server are in one container that forwards the GUI to the local X11 server allowing for interaction with the GUI without installing additional graphics libraries. The Calculator UA backend remains in [RTEMS/QEMU](#local), but is run within a container and the TAP network connection is created inside the container. These two containers communicate with one another over a user defined Docker Bridge which uses the 10.18.0.0/16 IP space. When containers come up in that network bridge Docker will assign each of them an IP (in this case the Server has 10.18.0.2 and the Calculator container has 10.18.0.3). Within the Calc UA a secondary bridge is created with the TAP network and RTEMS is statically assigned 10.18.0.4.
+1. This repository comes with a pre-compiled binary (*build/calc.exe*) that can be used for this exercise, or a freshly compiled binary can be used. If using a newly compiled binary, ensure it was compiled with [No DCHP](#nodhcp).
+2. Next, run `./desktop_sim.sh` from the top level directory. If no freshly compiled binary exists, it will automatically use `build/calc.exe`. If a freshly compiled binary is available, it will ask which you wish to use.
+3. This script will create the Docker network bridge and first startup the Server container with GUI (and download the container if necessary). It will then wait 3 seconds for this to come up, then it will launch the Calc UA container (and download if needed) which will provide the backend to the GUI. After several seconds the connection will be established (there is no explicit indicator on the console) and the calculator can now be used.
+4. To exit the calculator, close the GUI which will trigger the script to kill and remove the 2 Docker containers. If the script is prematurely killed the Docker containers may still be running and/or exist (use `docker ps` to see) and `docker kill` and `docker rm` commands at the end of the script may need run manually before executing the `desktop_sim.sh` script again.
 
   
 
